@@ -16,9 +16,13 @@ Office: https://learn.microsoft.com/en-us/officeupdates/office-updates-msi
 
 ### Guide:
 
-As seen in the example `main.py` file, create an asynchronous main function and run it with `asyncio.run(main())`
+Create a `main.py` file.
 
-Import the reqiured modules: `import src.mm.report as report` and `import asyncio`
+Import the required modules: `import src.mm.report as report` and `import asyncio`
+
+Install the the packages from `requirements.txt`
+
+As seen in the example `main.py` file, create an asynchronous main function and run it with `asyncio.run(main())`
 
 Create the Report, and then run it:
 
@@ -26,4 +30,8 @@ Create the Report, and then run it:
 
 `await rep.run()`
 
-Everything else happens automatically and creates an .xlsx spreadsheet in the `mm` directory
+Everything else happens automatically and creates an .xlsx spreadsheet in the `mm` directory with the name "NAME_YYYY-DD"
+
+### Notes:
+
+Created with Python 3.11
