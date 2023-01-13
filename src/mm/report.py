@@ -10,7 +10,24 @@ import re
 
 
 def unpack_office_kbs(rep: 'MonthlyReport'):
-    pass
+    doc = bs(rep.office_html, 'html.parser')
+    tr = doc.find_all('tr')
+    for r in tr:
+        if r.find('td'):
+            td = [x.get_text() for x in r.find_all('td')]
+            product = td[0].strip()
+            num = td[1].strip()
+            num = re.search(r"\(KB(.*)\)", num)
+            if num:
+                num = num.group(1)
+                if num in rep.unique_kb:
+                    continue
+                else:
+                    new_kb = Kb(kb=num)
+                    new_kb.releaseDate = get_second_tuesday_date(rep.year, rep.month)
+                    new_kb.url = f'https://support.microsoft.com/help/{num}'
+                    new_kb.products.append(product)
+                    rep.kbs.append(new_kb)
 
 
 def unpack_misc_kbs(rep: 'MonthlyReport'):
@@ -33,7 +50,6 @@ def unpack_misc_kbs(rep: 'MonthlyReport'):
                             new_kb.releaseDate = get_second_tuesday_date(rep.year, rep.month)
                             new_kb.url = f'https://support.microsoft.com/help/{num}'
                             rep.kbs.append(new_kb)
-
 
 
 def unpack_data(rep: 'MonthlyReport'):
