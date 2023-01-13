@@ -95,7 +95,7 @@ def get_catalog_url(articleName: str) -> str:
 
 def get_catalog_inline_url(update_id: str) -> str:
     # "https://www.catalog.update.microsoft.com/ScopedViewInline.aspx?updateid=" + id + "#PackageDetails"
-    return f"https://www.catalog.update.microsoft.com/ScopedViewInline.aspx?updateid={update_id}#PackageDetails"
+    return f"https://www.catalog.update.microsoft.com/ScopedViewInline.aspx?updateid={update_id}"
 
 
 async def gather_deployment(session: aiohttp.ClientSession, rep: 'MonthlyReport'):
@@ -155,6 +155,43 @@ async def gather_office(session: aiohttp.ClientSession, rep: 'MonthlyReport'):
         rep.office_html = await response.text()
 
 
+async def gather_inline(idn: str, session: aiohttp.ClientSession) -> dict:
+    url = get_catalog_inline_url(idn)
+    id_dict = {}
+    async with session.get(url) as inline:
+        html = await inline.text()
+        doc = bs(html, 'html.parser')
+        desc = doc.find('span', id='ScopedViewHandler_desc')
+        if desc:
+            id_dict['desc'] = desc.get_text(strip=True)
+        prod = doc.find('div', id='productsDiv')
+        if prod:
+            prod = prod.get_text(strip=True, separator=";;")
+            find = re.search(r'.*;;([\S\s]*)', prod)
+            if find:
+                prod = find.group(1).strip()
+                prod = re.sub(r'\n', "", prod)
+                prod = re.sub(r'\r', "", prod)
+                prod = re.sub(r' +', " ", prod)
+                id_dict['prod'] = prod
+        id_dict['super'] = []
+        div = doc.find('div', id='supersededbyInfo')
+        if div:
+            a = div.find_all('a')
+            if a:
+                for x in a:
+                    link = x.get_text()
+                    find = re.search(r'.*\((KB.*)\)', link)
+                    if find:
+                        id_dict['super'].append(find.group(1))
+        id_dict['severity'] = []
+        sev = doc.find('span', id='ScopedViewHandler_msrcSeverity')
+        if sev:
+            severity = sev.get_text(strip=True)
+            id_dict['severity'].append(severity)
+    return id_dict
+
+
 async def gather_catalog(kb: 'Kb', session: aiohttp.ClientSession):
     url = get_catalog_url(kb.kb)
     async with session.get(url) as catalog:
@@ -168,8 +205,16 @@ async def gather_catalog(kb: 'Kb', session: aiohttp.ClientSession):
             ids = []
             for row in rows:
                 if len(row['id']) > 10:
-                    ids.append(row['id'][:36])
-
+                    ids.append(asyncio.create_task(gather_inline(row['id'][:36], session)))
+            results = await asyncio.gather(*ids)
+            kb.description = results[0].get('desc')
+            for result in results:
+                if result.get('super'):
+                    kb.superseded.extend(result.get('super'))
+                if result.get('prod'):
+                    kb.products.append(result.get('prod'))
+                if result.get('severity'):
+                    kb.severity.extend(result.get('severity'))
 
 
 async def gather_catalogs(rep: 'MonthlyReport'):
@@ -255,6 +300,7 @@ class Kb(BaseModel):
     severity: list[str] = Field(default_factory=list)
     description: str = ""
     catalog: str = ""
+    superseded: list[str] = Field(default_factory=list)
 
     def highest_severity(self) -> str:
         if "Critical" in self.severity:
@@ -265,6 +311,12 @@ class Kb(BaseModel):
             return "Moderate"
         else:
             return "N/A"
+
+    def unique_products(self) -> list:
+        return list(set(self.products))
+
+    def unique_super(self) -> list:
+        return list(set(self.superseded))
 
 
 class MonthlyReport(BaseModel):
