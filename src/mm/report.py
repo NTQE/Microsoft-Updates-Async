@@ -3,10 +3,34 @@ from src.mm.models.deployment import Deployment, DeploymentResponse
 from src.mm.models.affectedProduct import AffectedProduct, AffectedProductResponse
 from src.mm.models.vulnerability import Vulnerability, VulnerabilityResponse
 from bs4 import BeautifulSoup as bs
+from openpyxl import Workbook
 import aiohttp
 import asyncio
 import calendar
 import re
+
+
+def create_xl(rep: 'MonthlyReport'):
+    wb = Workbook()
+    sh = wb.create_sheet(title='KB Articles')
+    sh.cell(1, 1, value="KB")
+    sh.cell(1, 2, value="Catalog")
+    sh.cell(1, 3, value="Details")
+    sh.cell(1, 4, value="Summary")
+    sh.cell(1, 5, value="Notes")
+    sh.cell(1, 6, value="Known Issues")
+    sh.cell(1, 7, value="Approval: Brandon")
+    sh.cell(1, 8, value="Approval: Andrew")
+    for i, kb in enumerate(rep.kbs, 2):
+        sh.cell(i, 1, value=f'=HYPERLINK("{kb.url}", "{kb.kb}")')
+        sh.cell(i, 2, value=f'=HYPERLINK("{kb.catalog}", "Catalog")')
+        prods = "\n".join(kb.unique_products())
+        sh.cell(i, 3, value=f'{kb.title}\nRelease Date: {kb.releaseDate[:10]}\nMax Severity: {kb.highest_severity()}\n\nProducts:\n{prods}')
+        if kb.description != "":
+            sh.cell(i, 4, value=f'{kb.description}')
+        if len(kb.unique_super()) > 0:
+            sh.cell(i, 5, value=f'\n\nSuperseded By:\n{kb.unique_super()}')
+    wb.save(filename=f"{rep.name}_{rep.year}-{rep.month:02d}.xlsx")
 
 
 def unpack_office_kbs(rep: 'MonthlyReport'):
@@ -405,4 +429,5 @@ class MonthlyReport(BaseModel):
         unpack_data(self)
         await gather_titles(self)
         await gather_catalogs(self)
+        create_xl(self)
 
