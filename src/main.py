@@ -15,8 +15,6 @@ async def main():
 
     for kb in rep.kbs:
         print(kb)
-        print(kb.unique_products())
-        print(kb.highest_severity())
     print(len(rep.kbs))
 
 

@@ -16,7 +16,7 @@ Office: https://learn.microsoft.com/en-us/officeupdates/office-updates-msi
 
 ### Guide:
 
-As seen in the example `main.py` file, create an asynchronous main function and run it with `asyncio.run(main)`
+As seen in the example `main.py` file, create an asynchronous main function and run it with `asyncio.run(main())`
 
 Import the reqiured modules: `import src.mm.report as report` and `import asyncio`
 

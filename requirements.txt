@@ -1,0 +1,4 @@
+pydantic~=1.10.4
+aiohttp~=3.8.3
+beautifulsoup4~=4.11.1
+openpyxl~=3.0.10
