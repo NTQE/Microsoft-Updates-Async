@@ -155,6 +155,31 @@ async def gather_office(session: aiohttp.ClientSession, rep: 'MonthlyReport'):
         rep.office_html = await response.text()
 
 
+async def gather_catalog(kb: 'Kb', session: aiohttp.ClientSession):
+    url = get_catalog_url(kb.kb)
+    async with session.get(url) as catalog:
+        html = await catalog.text()
+        doc = bs(html, 'html.parser')
+        no_results = doc.find('span', id='ctl00_catalogBody_noResultText')
+        if not no_results:
+            kb.catalog = url
+            table = doc.find('table', id='ctl00_catalogBody_updateMatches')
+            rows = table.find_all('tr')
+            ids = []
+            for row in rows:
+                if len(row['id']) > 10:
+                    ids.append(row['id'][:36])
+
+
+
+async def gather_catalogs(rep: 'MonthlyReport'):
+    catalog = []
+    async with aiohttp.ClientSession() as session:
+        for kb in rep.kbs:
+            catalog.append(asyncio.create_task(gather_catalog(kb, session)))
+        await asyncio.gather(*catalog)
+
+
 async def gather_title(kb: 'Kb', session: aiohttp.ClientSession):
     async with session.get(kb.url) as article:
         html = await article.text()
@@ -229,6 +254,7 @@ class Kb(BaseModel):
     products: list[str] = Field(default_factory=list)
     severity: list[str] = Field(default_factory=list)
     description: str = ""
+    catalog: str = ""
 
     def highest_severity(self) -> str:
         if "Critical" in self.severity:
@@ -326,4 +352,5 @@ class MonthlyReport(BaseModel):
         await gather_data(self)
         unpack_data(self)
         await gather_titles(self)
+        await gather_catalogs(self)
 
