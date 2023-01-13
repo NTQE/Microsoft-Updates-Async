@@ -155,6 +155,28 @@ async def gather_office(session: aiohttp.ClientSession, rep: 'MonthlyReport'):
         rep.office_html = await response.text()
 
 
+async def gather_title(kb: 'Kb', session: aiohttp.ClientSession):
+    async with session.get(kb.url) as article:
+        html = await article.text()
+        doc = bs(html, 'html.parser')
+        title = doc.find('title')
+        if title:
+            short_title = re.search(r'(.*) - .*$', title.text)
+            if short_title:
+                new_title = short_title.group(1)
+            else:
+                new_title = title.text
+            kb.title = new_title
+
+
+async def gather_titles(rep: 'MonthlyReport'):
+    titles = []
+    async with aiohttp.ClientSession() as session:
+        for kb in rep.kbs:
+            titles.append(asyncio.create_task(gather_title(kb, session)))
+        await asyncio.gather(*titles)
+
+
 async def gather_data(report: 'MonthlyReport'):
     async with aiohttp.ClientSession() as session:
         tasks = [asyncio.create_task(gather_deployment(session, report)),
@@ -163,6 +185,7 @@ async def gather_data(report: 'MonthlyReport'):
                  asyncio.create_task(gather_misc(session, report)),
                  asyncio.create_task(gather_office(session, report))]
         await asyncio.gather(*tasks)
+
 
 
 def get_second_tuesday_string(y: int, m: int) -> str:
@@ -302,4 +325,5 @@ class MonthlyReport(BaseModel):
         print(self.start, "to", self.end)
         await gather_data(self)
         unpack_data(self)
+        await gather_titles(self)
 
