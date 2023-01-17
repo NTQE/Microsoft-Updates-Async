@@ -33,10 +33,14 @@ Head to http://localhost:80 and check for the json response.
 Head to http://localhost:80/report/year={year}+month={month}+name={name}, replacing `{year}` with `2023`, `{month}` with `1` and `{name}` with `report` if you want to download the Report for January 2023.
 
 
+### Run API:
+
+Within terminal inside the `async-mm-v2` folder, run: `uvicorn src.main:app`
+
+It should default to http://localhost:8000. Navigate there to check the json response. 
 
 
-
-### Manual Guide:
+### Guide:
 
 Create a `main.py` file.
 
