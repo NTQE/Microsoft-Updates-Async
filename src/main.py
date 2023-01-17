@@ -1,13 +1,26 @@
 import src.mm.report as report
-import asyncio
+from fastapi import FastAPI
+import os
+from fastapi.responses import FileResponse
+
+app = FastAPI()
 
 
-async def main():
-    rep = report.MonthlyReport(name='Monthly Report', year=2023, month=1)
+@app.get("/")
+async def read_root():
+    return {"Instructions": "go to :8000/report/year={year}+month={month}+name={name}"}
+
+
+@app.get("/report/year={year}+month={month}+name={name}")
+async def main(year: int, month: int, name: str):
+    rep = report.MonthlyReport(name=name, year=year, month=month)
+    file_name = f"{name}_{year}-{month:02d}.xlsx"
+
+    file_path = os.path.join(os.getcwd(), file_name)
 
     await rep.run()
 
-    print(rep.get_deployment_api_url(skip=0))
+    '''print(rep.get_deployment_api_url(skip=0))
     print(rep.get_vulnerability_api_url(skip=0))
     print(rep.get_affectedProduct_api_url(skip=0))
     print(report.get_misc_url())
@@ -15,8 +28,6 @@ async def main():
 
     for kb in rep.kbs:
         print(kb)
-    print(len(rep.kbs))
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
+    print(len(rep.kbs))'''
+    # return {"year": year, "month": month, "name": name}
+    return FileResponse(path=file_path, media_type='application/octet-stream', filename=file_name)
