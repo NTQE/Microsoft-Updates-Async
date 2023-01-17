@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
-from src.mm.models.deployment import Deployment, DeploymentResponse
-from src.mm.models.affectedProduct import AffectedProduct, AffectedProductResponse
-from src.mm.models.vulnerability import Vulnerability, VulnerabilityResponse
+from mm.models.deployment import Deployment, DeploymentResponse
+from mm.models.affectedProduct import AffectedProduct, AffectedProductResponse
+from mm.models.vulnerability import Vulnerability, VulnerabilityResponse
 from bs4 import BeautifulSoup as bs
 from openpyxl import Workbook
 import aiohttp
@@ -10,7 +10,7 @@ import calendar
 import re
 
 
-def create_xl(rep: 'MonthlyReport'):
+async def create_xl(rep: 'MonthlyReport'):
     wb = Workbook()
     sh = wb.create_sheet(title='KB Articles')
     sh.cell(1, 1, value="KB")
@@ -429,5 +429,5 @@ class MonthlyReport(BaseModel):
         unpack_data(self)
         await gather_titles(self)
         await gather_catalogs(self)
-        create_xl(self)
+        await create_xl(self)
 
