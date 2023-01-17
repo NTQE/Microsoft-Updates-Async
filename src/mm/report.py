@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
-from mm.models.deployment import Deployment, DeploymentResponse
-from mm.models.affectedProduct import AffectedProduct, AffectedProductResponse
-from mm.models.vulnerability import Vulnerability, VulnerabilityResponse
+from src.mm.models.deployment import Deployment, DeploymentResponse
+from src.mm.models.affectedProduct import AffectedProduct, AffectedProductResponse
+from src.mm.models.vulnerability import Vulnerability, VulnerabilityResponse
 from bs4 import BeautifulSoup as bs
 from openpyxl import Workbook
 import aiohttp

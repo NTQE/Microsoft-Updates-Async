@@ -1,4 +1,4 @@
-import mm.report as report
+import src.mm.report as report
 from fastapi import FastAPI
 import os
 from fastapi.responses import FileResponse
