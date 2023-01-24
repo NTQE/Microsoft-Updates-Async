@@ -4,6 +4,8 @@ from src.mm.models.affectedProduct import AffectedProduct, AffectedProductRespon
 from src.mm.models.vulnerability import Vulnerability, VulnerabilityResponse
 from bs4 import BeautifulSoup as bs
 from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+import pandas as pd
 import aiohttp
 import asyncio
 import calendar
@@ -30,6 +32,27 @@ async def create_xl(rep: 'MonthlyReport'):
             sh.cell(i, 4, value=f'{kb.description}')
         if len(kb.unique_super()) > 0:
             sh.cell(i, 5, value=f'\n\nSuperseded By:\n{kb.unique_super()}')
+
+    sh2 = wb.create_sheet(title='Microsoft CVE')
+    cve_list = []
+    for x in rep.vulnerabilities:
+        cve_entry = {'Latest': x.latestRevisionDate,
+                     'CVE': x.cveNumber,
+                     'Title': x.cveTitle,
+                     'CVSS Score': x.temporalScore,
+                     'Attack Vector': 'test',
+                     'User Interaction': 'test',
+                     'Impact': x.impact,
+                     'Highest Severity': x.severity,
+                     'Public': x.publiclyDisclosed,
+                     'Assessment': x.latestSoftwareRelease,
+                     'Exploited': x.exploited
+                     }
+        cve_list.append(cve_entry)
+    df = pd.DataFrame(cve_list)
+    df.sort_values(by='CVSS Score', ascending=False, inplace=True, ignore_index=True)
+    for r in dataframe_to_rows(df, index=False, header=True):
+        sh2.append(r)
     wb.save(filename=f"{rep.name}_{rep.year}-{rep.month:02d}.xlsx")
 
 

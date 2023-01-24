@@ -8,10 +8,10 @@ app = FastAPI()
 
 @app.get("/")
 async def read_root():
-    return {"Instructions": "go to :8000/report/year={year}+month={month}+name={name}"}
+    return {"Instructions": "go to http://localhost:8000/docs for more information"}
 
 
-@app.get("/report/year={year}+month={month}+name={name}")
+@app.get("/report/{year}-{month}-{name}")
 async def main(year: int, month: int, name: str):
     rep = report.MonthlyReport(name=name, year=year, month=month)
     file_name = f"{name}_{year}-{month:02d}.xlsx"
