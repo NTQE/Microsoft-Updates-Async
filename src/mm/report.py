@@ -40,8 +40,8 @@ async def create_xl(rep: 'MonthlyReport'):
                      'CVE': x.cveNumber,
                      'Title': x.cveTitle,
                      'CVSS Score': x.temporalScore,
-                     'Attack Vector': 'test',
-                     'User Interaction': 'test',
+                     'Attack Vector': x.get_av(),
+                     'User Interaction': x.get_ui(),
                      'Impact': x.impact,
                      'Highest Severity': x.severity,
                      'Public': x.publiclyDisclosed,
@@ -367,6 +367,11 @@ class Kb(BaseModel):
 
 
 class MonthlyReport(BaseModel):
+    """
+    name: str
+    year: int
+    month: int
+    """
     name: str
     year: int
     month: int
@@ -453,4 +458,3 @@ class MonthlyReport(BaseModel):
         await gather_titles(self)
         await gather_catalogs(self)
         await create_xl(self)
-
