@@ -5,6 +5,7 @@ from src.mm.models.vulnerability import Vulnerability, VulnerabilityResponse
 from bs4 import BeautifulSoup as bs
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
 import pandas as pd
 import aiohttp
 import asyncio
@@ -36,7 +37,7 @@ async def create_xl(rep: 'MonthlyReport'):
     sh2 = wb.create_sheet(title='Microsoft CVE')
     cve_list = []
     for x in rep.vulnerabilities:
-        cve_entry = {'Latest': x.latestRevisionDate,
+        cve_entry = {'Latest': x.latestRevisionDate[:10],
                      'CVE': x.cveNumber,
                      'Title': x.cveTitle,
                      'CVSS Score': x.temporalScore,
