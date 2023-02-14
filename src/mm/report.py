@@ -274,6 +274,7 @@ async def gather_catalogs(rep: 'MonthlyReport'):
 
 async def gather_title(kb: 'Kb', session: aiohttp.ClientSession):
     async with session.get(kb.url) as article:
+        print(kb.kb)
         html = await article.text()
         doc = bs(html, 'html.parser')
         title = doc.find('title')
@@ -288,7 +289,8 @@ async def gather_title(kb: 'Kb', session: aiohttp.ClientSession):
 
 async def gather_titles(rep: 'MonthlyReport'):
     titles = []
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(force_close=True, limit=150)
+    async with aiohttp.ClientSession(connector=connector) as session:
         for kb in rep.kbs:
             titles.append(asyncio.create_task(gather_title(kb, session)))
         await asyncio.gather(*titles)
@@ -396,10 +398,11 @@ class MonthlyReport(BaseModel):
         if self.month == 1:
             month = 12
             year = self.year - 1
+            return f"{get_second_tuesday_date(year, month, 1)}"
         else:
             month = self.month
             year = self.year
-        return f"{get_second_tuesday_date(year, month, 1)}"
+            return f"{get_second_tuesday_date(year, month - 1, 1)}"
 
     @property
     def start_encoded(self):
