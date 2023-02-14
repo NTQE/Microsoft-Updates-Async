@@ -3,6 +3,8 @@
 ## Microsoft Monthly Patch Updates Report Creation
 This package creates a spreadsheet, starting a report for the updates for a specified month with information from the Catalog, MSRC Security Center, WSUS Updates, and Office Updates.
 
+Uses FastAPI and async/await in Python to create an API that will collect all the necessary information and compile it into a spreadsheet that will be downloaded from the browser. 
+
 Sources:
 
 MSRC: https://msrc.microsoft.com/update-guide/deployments
@@ -30,14 +32,16 @@ Check your Docker containers and ensure it is running properly.
 
 Head to http://localhost:80 and check for the json response.
 
-Head to http://localhost:80/report/year={year}+month={month}+name={name}, replacing `{year}` with `2023`, `{month}` with `1` and `{name}` with `report` if you want to download the Report for January 2023.
+Head to http://localhost:80/report/year={year}-{month}-{name}, replacing `{year}` with `2023`, `{month}` with `1` and `{name}` with `report` if you want to download the Report for January 2023.
+
+Head to http://localhost:80/docs for the FastAPI auto documentation.
 
 
 ### Run API:
 
-Within terminal inside the `async-mm-v2` folder, run: `uvicorn src.main:app`
+Within terminal inside the `async-mm-v2` folder, run: `uvicorn src.main:app` or `uvicorn src.main:app --reload` for hot reload.
 
-It should default to http://localhost:8000. Navigate there to check the json response. 
+It should default to http://localhost:8000. Navigate there to check the json response. (Only port 8000 if not using Docker)
 
 
 ### Guide:
@@ -56,7 +60,7 @@ Create the Report, and then run it:
 
 `await rep.run()`
 
-Everything else happens automatically and creates an .xlsx spreadsheet in the `mm` directory with the name "NAME_YYYY-DD"
+Everything else happens automatically and creates an .xlsx spreadsheet in the `mm` directory with the name "NAME_YYYY-DD" and sends the FileResponse object back to the browser using that newly created file.
 
 ### Notes:
 
