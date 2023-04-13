@@ -17,21 +17,25 @@ async def create_xl(rep: 'MonthlyReport'):
     sh = wb.create_sheet(title='KB Articles')
     sh.cell(1, 1, value="KB")
     sh.cell(1, 2, value="Catalog")
-    sh.cell(1, 3, value="Details")
-    sh.cell(1, 4, value="Summary")
-    sh.cell(1, 5, value="Notes")
-    sh.cell(1, 6, value="Known Issues")
-    sh.cell(1, 7, value="Approval: Brandon")
-    sh.cell(1, 8, value="Approval: Andrew")
+    sh.cell(1, 3, value="Release Date")
+    sh.cell(1, 4, value="Title")
+    sh.cell(1, 5, value="Summary")
+    sh.cell(1, 6, value="Notes")
+    sh.cell(1, 7, value="Known Issues")
+    sh.cell(1, 8, value="Approval: Brandon")
+    sh.cell(1, 9, value="Approval: Andrew")
     for i, kb in enumerate(rep.kbs, 2):
         sh.cell(i, 1, value=f'=HYPERLINK("{kb.url}", "{kb.kb}")')
         sh.cell(i, 2, value=f'=HYPERLINK("{kb.catalog}", "Catalog")')
-        prods = "\n".join(kb.unique_products())
-        sh.cell(i, 3, value=f'{kb.title}\nRelease Date: {kb.releaseDate[:10]}\nMax Severity: {kb.highest_severity()}\n\nProducts:\n{prods}')
+        sh.cell(i, 3, value=f'{kb.releaseDate}')
+
+        # prods = "\n".join(kb.unique_products())
+        # sh.cell(i, 3, value=f'{kb.title}\nRelease Date: {kb.releaseDate[:10]}\nMax Severity: {kb.highest_severity()}\n\nProducts:\n{prods}')
+        sh.cell(i, 4, value=f'{kb.title}')
         if kb.description != "":
-            sh.cell(i, 4, value=f'{kb.description}')
+            sh.cell(i, 5, value=f'{kb.description}')
         if len(kb.unique_super()) > 0:
-            sh.cell(i, 5, value=f'\n\nSuperseded By:\n{kb.unique_super()}')
+            sh.cell(i, 6, value=f'\n\nSuperseded By:\n{kb.unique_super()}')
 
     sh2 = wb.create_sheet(title='Microsoft CVE')
     cve_list = []

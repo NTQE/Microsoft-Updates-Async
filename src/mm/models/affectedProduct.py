@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class KbArticle(BaseModel):
-    articleName: str
+    articleName: str = ""
     articleUrl: str = ""
     downloadName: str = ""
     downloadUrl: str = ""
