@@ -1,5 +1,3 @@
-# async-mm-v2
-
 ## Microsoft Monthly Patch Updates Report Creation
 This package creates a spreadsheet, starting a report for the updates for a specified month with information from the Catalog, MSRC Security Center, WSUS Updates, and Office Updates.
 
